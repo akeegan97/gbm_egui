@@ -11,4 +11,8 @@ csv = "1.2.1"
 eframe = "0.21.3"
 egui = "0.21.0"
 egui_extras = { version = "0.21.0", features = ["datepicker", "image"] }
+num_cpus = "1.15.0"
+rand = "0.8.5"
+rand_distr = "0.4.3"
+rayon = "1.7.0"
 rfd = "0.11.3"
