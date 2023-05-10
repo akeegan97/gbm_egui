@@ -32,11 +32,7 @@ let end_index = price_data.date
         *s == t_end_date
     })
     .unwrap_or_default();
-    println!("{}",start_index);
-    println!("{}",end_index);
-    println!("{}",t_start_date);
-    println!("{}",t_end_date);
-
+    
     let training_prices:&[f64];
     match *selected_price{
         Some(PriceType::Open) => training_prices = &price_data.open[start_index..end_index],
@@ -138,7 +134,7 @@ let end_index = price_data.date
     *step_size = predicted_days as f64;
     *starting_price = initial_price;
     
-    println!("{:?}", optimized_vec.len());
+    
 
 
     //getting actual price on predicted day

@@ -1,6 +1,6 @@
 //use egui_extras::DatePickerButton;
 use eframe::egui;
-use egui::{Color32, RichText, FontId, Vec2};
+use egui::{Color32, RichText, FontId, Vec2,plot::{PlotPoints,Line, Legend, Plot}};
 use chrono::{NaiveDate, Weekday, Datelike};
 use crate::functions::gbm::{self};
 #[derive(PartialEq)]
@@ -137,6 +137,39 @@ pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bo
                     c[1].label(RichText::new(format!("{}",percent_error)).color(Color32::BLACK).font(FontId::proportional(18.0)));
 
                 }); 
+            });
+            egui::CentralPanel::default().frame(egui::Frame::default().fill(Color32::GRAY).inner_margin(MARGIN)).show(ctx,|ui|{
+                //getting the vectors from the sim into the correct form for egui's plotting style
+                let new_plot_vecs:Vec<Vec<[f64;2]>> = plotting_vecs
+                    .iter()
+                    .map(|iv| iv
+                        .iter()
+                        .enumerate()
+                        .map(|(i, &x)| [(i + 1) as f64,x])
+                        .collect())
+                    .collect::<Vec<Vec<[f64;2]>>>();
+
+                let mut plot = Plot::new("GBM GRAPH")
+                    .view_aspect(3.0)
+                    .auto_bounds_y()
+                    .include_y(0.0);
+                let mut lines:Vec<Line> = Vec::new();
+                for path in new_plot_vecs.iter(){
+                    let plot_points: PlotPoints = PlotPoints::new(path.to_vec());
+                    let line = Line::new(plot_points)
+                        .color(Color32::from_rgba_premultiplied(
+                            rand::random::<u8>(),
+                            rand::random::<u8>(),
+                            rand::random::<u8>(),
+                            255,
+                        ));
+                    lines.push(line);
+                }
+                plot.show(ui,|p_ui|{
+                    for i in lines{
+                        p_ui.line(i);
+                    }
+                });
             });
             
 }
