@@ -1,6 +1,6 @@
 //use egui_extras::DatePickerButton;
 use eframe::egui;
-use egui::{Color32, RichText, FontId, Vec2,plot::{PlotPoints,Line, Legend, Plot}};
+use egui::{Color32, RichText, FontId, Vec2,plot::{PlotPoints,Line, Plot}};
 use chrono::{NaiveDate, Weekday, Datelike};
 use crate::functions::gbm::{self};
 #[derive(PartialEq)]
@@ -149,7 +149,7 @@ pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bo
                         .collect())
                     .collect::<Vec<Vec<[f64;2]>>>();
 
-                let mut plot = Plot::new("GBM GRAPH")
+                let plot = Plot::new("GBM GRAPH")
                     .view_aspect(3.0)
                     .auto_bounds_y()
                     .include_y(0.0);
