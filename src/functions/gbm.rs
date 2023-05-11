@@ -4,11 +4,11 @@ use csv::Reader;
 use chrono::NaiveDate;
 use rand_distr::{Normal, Distribution};
 use std::{thread,sync::{Arc, Mutex}};
-
-
 use crate::app::main_page::PriceType;
-//use chrono::{NaiveDate, DateTime, Local, Datelike};
 extern crate csv;
+
+
+
 pub fn gbm(file_path:&String, t_start_date:NaiveDate, t_end_date:NaiveDate, selected_steps:&mut i64, paths:&mut i64, selected_price:&mut Option<PriceType>,
             predicted_price:&mut f64,
             mu_hat:&mut f64,
@@ -21,17 +21,17 @@ pub fn gbm(file_path:&String, t_start_date:NaiveDate, t_end_date:NaiveDate, sele
     let price_data = PriceData::read_csv(file_path, true);
     
 //need to check if date specified in t_start and t_end are actually in the data set and send a message to the main page.
-let start_index = price_data.date
-    .iter()
-    .position(|s| {
-        *s == t_start_date
-    }).unwrap_or_default();
-let end_index = price_data.date
-    .iter()
-    .position(|s| {
-        *s == t_end_date
-    })
-    .unwrap_or_default();
+    let start_index = price_data.date
+        .iter()
+        .position(|s| {
+            *s == t_start_date
+        }).unwrap_or_default();
+    let end_index = price_data.date
+        .iter()
+        .position(|s| {
+            *s == t_end_date
+        })
+        .unwrap_or_default();
     
     let training_prices:&[f64];
     match *selected_price{
@@ -93,16 +93,14 @@ let end_index = price_data.date
     }
     *plotting_vecs = plot_vec;
     let predicted_days = *selected_steps;
-    
+    //paralized calculation for the gbm final price (which is the only one that matters)
     let optimized_vec_mutex = Arc::new(Mutex::new(Vec::with_capacity(*paths as usize)));
-
-    let paths_per_thread = (*paths as f64 / num_cpus::get() as f64).ceil() as usize;
-
+    let paths_per_thread = (*paths as f64 / num_cpus::get() as f64).ceil() as usize;//finds the number of cpu cores that the calculation can run on and creates a specified chunk size
     let handles: Vec<_> = (0..num_cpus::get()).map(|i| {
         let optimized_vec_mutex_cloned = optimized_vec_mutex.clone();
         let start = i * paths_per_thread;
         let end = usize::min(start + paths_per_thread, *paths as usize);
-        thread::spawn(move || {
+        thread::spawn(move || {//spawns thread for each cpu core to run the below calculations
             let mut sim_vec: Vec<f64> = Vec::with_capacity(predicted_days as usize + 1);
             sim_vec.push(initial_price);
             let mut i: usize = 1;
@@ -125,8 +123,8 @@ let end_index = price_data.date
     for handle in handles {
         handle.join().unwrap();
     }
-
-    let optimized_vec = optimized_vec_mutex.lock().unwrap().clone();
+    //sending the results to the Sim object variables so they're accessible on the main gui
+    let optimized_vec = optimized_vec_mutex.lock().unwrap().clone();//collected vector with the final prices of the simulation 
     *predicted_price = (optimized_vec.iter().sum::<f64>()) / optimized_vec.len() as f64;
     *mu_hat = mu;
     *sigma_hat = sigma;
@@ -149,8 +147,7 @@ let end_index = price_data.date
 
 }
 
-
-#[derive(Debug)]
+//data structure to hold the csv file price data
 pub struct PriceData{
     _headers:csv::StringRecord,
     date:Vec<NaiveDate>,
@@ -161,6 +158,7 @@ pub struct PriceData{
     adj_close:Vec<f64>,
     volumn:Vec<f64>
 }
+//methods for the pricedata struct
 impl PriceData{
     fn new()->PriceData{
         PriceData { _headers: csv::StringRecord::new(), 
@@ -173,6 +171,7 @@ impl PriceData{
             volumn: Vec::new() 
         }
     }
+    //function that actually makes the price data object
     fn read_csv(file_path:&String, has_headers:bool)->PriceData{
         let file = std::fs::File::open(file_path).unwrap();
         let mut reader:Reader<File> = csv::ReaderBuilder::new()
@@ -185,6 +184,7 @@ impl PriceData{
         }
         return price_date;
     }
+    //function that creates a row of data 
     fn create(&mut self, row: &csv::StringRecord) {
         let date_str = row[0].to_string();
         let date = NaiveDate::parse_from_str(&date_str, "%m/%d/%Y").unwrap();

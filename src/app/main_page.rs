@@ -1,4 +1,4 @@
-//use egui_extras::DatePickerButton;
+
 use eframe::egui;
 use egui::{Color32, RichText, FontId, Vec2,plot::{PlotPoints,Line, Plot}};
 use chrono::{NaiveDate, Weekday, Datelike};
@@ -11,7 +11,7 @@ pub enum PriceType{
     Adjclose,
     Open,
 }
-
+//function that draws the ui and all the elements that get shown on the gui
 pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bool, t_start_date:&mut NaiveDate, t_end_date:&mut NaiveDate, selected_steps:&mut i64, paths:&mut i64, selected_price_type:&mut Option<PriceType>,predicted_price:&mut f64,
                 mu:&mut f64,
                 sigma:&mut f64,
@@ -65,9 +65,7 @@ pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bo
                 ui.add(egui::Label::new(RichText::new("Valid Date for Prediction").color(Color32::BLACK).font(FontId::proportional(15.0))));
             }
             ui.separator();
-
-            //making sure file is selected before option of simulating
-
+            //optional selection on what price data to use for the sim
             ui.vertical(|v|{
                 let high_price:bool = *selected_price_type == Some(PriceType::High);
                 if v.selectable_label(high_price, egui::RichText::new("Use High Price").color(Color32::BLACK).font(FontId::proportional(15.0))).clicked(){
@@ -91,7 +89,7 @@ pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bo
                 }
             }); 
             ui.separator();
-            
+            //making sure file is selected before option of simulating
             if *file_specified && is_weekday(prediction_day){
                 if ui.add(egui::Button::new("Click to Sim")).clicked(){
                     gbm::gbm(&picked_file_path, *t_start_date, 
@@ -107,10 +105,11 @@ pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bo
                         real_price,
                         step_size,
                         starting_price
-                        );
+                    );
                 }
             }
         });
+        //outcomes of the simulation
         egui::TopBottomPanel::top("results from sim").frame(egui::Frame::default()
             .inner_margin(MARGIN)
             .fill(Color32::GRAY)
@@ -134,10 +133,11 @@ pub fn start(ctx:&egui::Context, picked_path: &mut String,file_specified:&mut bo
                     c[1].label(RichText::new(format!("{}",*starting_price)).color(Color32::BLACK).font(FontId::proportional(18.0)));
                     c[1].label(RichText::new(format!("{}",*predicted_price)).color(Color32::BLACK).font(FontId::proportional(18.0)));
                     c[1].label(RichText::new(format!("{}",*real_price)).color(Color32::BLACK).font(FontId::proportional(18.0)));
-                    c[1].label(RichText::new(format!("{}",percent_error)).color(Color32::BLACK).font(FontId::proportional(18.0)));
+                    c[1].label(RichText::new(format!("%{}",percent_error)).color(Color32::BLACK).font(FontId::proportional(18.0)));
 
                 }); 
             });
+            //plot of gbm paths 50
             egui::CentralPanel::default().frame(egui::Frame::default().fill(Color32::GRAY).inner_margin(MARGIN)).show(ctx,|ui|{
                 //getting the vectors from the sim into the correct form for egui's plotting style
                 let new_plot_vecs:Vec<Vec<[f64;2]>> = plotting_vecs
@@ -179,9 +179,6 @@ fn is_weekday(date: NaiveDate) -> bool {
     weekday != Weekday::Sat && weekday != Weekday::Sun
 }
 
-// fn is_holiday(date: NaiveDate) -> bool {
-//     // add your holiday logic here, for example:
-//     date.month() == 12 && date.day() == 25 // Christmas Day
-// }
+//still to do add function that makes sure there isn't a holiday/non trading day that's not a weekend for the dates
 
 const MARGIN:Vec2 = egui::vec2(7.0,7.0);

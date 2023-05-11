@@ -10,7 +10,7 @@ mod app{
     pub mod main_page;
 }
 use crate::app::main_page::PriceType;
-
+//using the setput function to load font file into context 
 fn setup(ctx: &egui::Context){
     let mut fonts: FontDefinitions = FontDefinitions::default();
     fonts.font_data.insert(
@@ -25,7 +25,6 @@ fn setup(ctx: &egui::Context){
         .or_default()
         .push("MyFont".to_owned());
     ctx.set_fonts(fonts);
-//add images here if needed
 }
 fn main()->Result<(),eframe::Error>{
     env::set_var("RUST_BACKTRACE", "1");
@@ -40,6 +39,7 @@ fn main()->Result<(),eframe::Error>{
         Box::new(|cc|Box::new(Sim::new(cc)))
     )
 }
+//actual data held by the application
 struct Sim{
     file_path:String,
     file_specified:bool,
@@ -79,10 +79,15 @@ impl Sim{
         }
     }
 }
-
 impl eframe::App for Sim{
     fn update(&mut self, ctx:&egui::Context, _frame:&mut eframe::Frame){
-        start(ctx, &mut self.file_path, &mut self.file_specified, &mut self.t_start_date, &mut self.t_end_date, &mut self.selected_steps, &mut self.paths, &mut self.selected_price_type,
+        start(ctx, &mut self.file_path, 
+            &mut self.file_specified, 
+            &mut self.t_start_date, 
+            &mut self.t_end_date, 
+            &mut self.selected_steps, 
+            &mut self.paths, 
+            &mut self.selected_price_type,
             &mut self.predicted_price,
             &mut self.mu,
             &mut self.sigma,
