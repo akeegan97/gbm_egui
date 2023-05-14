@@ -20,7 +20,6 @@ pub fn gbm(file_path:&String, t_start_date:NaiveDate, t_end_date:NaiveDate, sele
             starting_price:&mut f64 ){
     let price_data = PriceData::read_csv(file_path, true);
     
-//need to check if date specified in t_start and t_end are actually in the data set and send a message to the main page.
     let start_index = price_data.date
         .iter()
         .position(|s| {
@@ -64,12 +63,13 @@ pub fn gbm(file_path:&String, t_start_date:NaiveDate, t_end_date:NaiveDate, sele
 
     let sigma:f64 = sigma_sq.sqrt();//std_dev
     let normalized_sigma:f64 = sigma * (*selected_steps as f64).sqrt();
-    let nromalized_sigma_sq = normalized_sigma.sqrt();
+    let normalized_sigma_sq = normalized_sigma.sqrt();
 
     let delta_t:f64 = 1.0/ *selected_steps as f64;
 
     //starting simulation part
-    let plot_vecs_size:usize = 50;//number of vectors that will be used for plotting purposes
+    let plot_vecs_size:usize = 50;
+    //number of vectors that will be used for plotting purposes
  
     let mut plot_vec:Vec<Vec<f64>> = Vec::new();
     
@@ -85,7 +85,7 @@ pub fn gbm(file_path:&String, t_start_date:NaiveDate, t_end_date:NaiveDate, sele
             let normal = Normal::new(mu, delta_t.sqrt()).unwrap();
             let rng_value:f64 = normal.sample(&mut rand::thread_rng());
             let value:f64 = sim_vec[index - 1];
-            let operation:f64 = value * (E.powf(mu - (0.5 * normalized_sigma) * delta_t + (nromalized_sigma_sq * rng_value)));
+            let operation:f64 = value * (E.powf(mu - (0.5 * normalized_sigma) * delta_t + (normalized_sigma_sq * rng_value)));
             i+=1;
             sim_vec.push(operation);
         }
@@ -108,7 +108,7 @@ pub fn gbm(file_path:&String, t_start_date:NaiveDate, t_end_date:NaiveDate, sele
                 let normal = Normal::new(mu, delta_t.sqrt()).unwrap();
                 let rng_value: f64 = normal.sample(&mut rand::thread_rng());
                 let value: f64 = sim_vec[i - 1];
-                let operation: f64 = value * (E.powf(mu - (0.5 * normalized_sigma) * delta_t + (nromalized_sigma_sq * rng_value)));
+                let operation: f64 = value * (E.powf(mu - (0.5 * normalized_sigma) * delta_t + (normalized_sigma_sq * rng_value)));
                 sim_vec.push(operation);
                 i += 1;
             }
